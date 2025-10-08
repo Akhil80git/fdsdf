@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra Notes - Folder Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            overflow: hidden;
+        }
+
+        .vertical-nav {
+            width: 220px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 15px 0 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .logo h1 {
+            font-size: 20px;
+            color: #4cc9f0;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+        }
+
+        .logo p {
+            font-size: 11px;
+            color: #a5b1c2;
+            margin-top: 5px;
+        }
+
+        .nav-section {
+            margin-bottom: 20px;
+        }
+
+        .nav-section h3 {
+            font-size: 13px;
+            color: #718096;
+            padding: 0 15px 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: #cbd5e0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border-left: 3px solid #4cc9f0;
+        }
+
+        .nav-item.active {
+            background: rgba(76, 201, 240, 0.1);
+            color: #4cc9f0;
+            border-left: 3px solid #4cc9f0;
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .folder-section {
+            margin-top: 10px;
+        }
+
+        .folder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px 8px;
+            cursor: pointer;
+        }
+
+        .folder-header h3 {
+            font-size: 13px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .folder-list {
+            padding-left: 15px;
+        }
+
+        .folder {
+            padding: 6px 12px;
+            margin: 2px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .folder:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .folder.active {
+            background: yellow;
+            color: #000;
+        }
+
+        .folder i {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        .folder-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .folder:hover .folder-actions {
+            opacity: 1;
+        }
+
+        .folder-action-btn {
+            background: transparent;
+            border: none;
+            color: #718096;
+            cursor: pointer;
+            font-size: 11px;
+            transition: color 0.3s;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .folder-action-btn:hover {
+            color: #4cc9f0;
+            background: rgba(76, 201, 240, 0.1);
+        }
+
+        .folder-input {
+            padding: 4px;
+            border: 1px solid #4cc9f0;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+            font-size: 13px;
+            width: 150px;
+        }
+
+        .file-nav {
+            width: 220px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .file-header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0 15px 8px;
+        }
+
+        .file-list {
+            padding-left: 15px;
+        }
+
+        .file-item {
+            padding: 6px 12px;
+            margin: 2px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item:hover {
+            background: none;
+        }
+
+        .file-item.active {
+            background: yellow;
+            color: #000;
+        }
+
+        .file-delete-btn {
+            background: transparent;
+            border: none;
+            color: red;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px;
+        }
+
+        .file-input {
+            padding: 4px;
+            border: 1px solid #4cc9f0;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+            font-size: 13px;
+            width: 150px;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h2 {
+            font-size: 22px;
+            color: #4cc9f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .add-box-btn {
+            background: #4cc9f0;
+            border: none;
+            color: #1a1a2e;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 200;
+            display: block;
+        }
+
+        .box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            padding: 20px 15px 15px;
+            margin-bottom: 15px;
+            position: relative;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .box-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .box-action-btn {
+            background: transparent;
+            border: none;
+            color: #718096;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            transition: color 0.3s;
+        }
+
+        .box-delete-btn {
+            color: red;
+        }
+
+        .box-action-btn:hover {
+            color: #4cc9f0;
+        }
+
+        .box-content {
+            min-height: 30px;
+            padding: 5px 10px;
+            outline: none;
+            resize: none;
+            width: 100%;
+            background: transparent;
+            color: #e6e6e6;
+            border: none;
+            font-size: 14px;
+            line-height: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(76, 201, 240, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(76, 201, 240, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <nav class="vertical-nav">
+        <div class="logo">
+            <h1>ULTRA NOTES</h1>
+            <p>Folder Management System</p>
+        </div>
+        
+        <div class="nav-section folder-section">
+            <div class="folder-header">
+                <h3>Folders</h3>
+                <i class="fas fa-plus" id="new-folder-btn"></i>
+            </div>
+            <div class="folder-list" id="folder-list">
+                <!-- Folders will be dynamically added here -->
+            </div>
+        </div>
+    </nav>
+    
+    <nav class="vertical-nav file-nav">
+        <div class="file-header">
+            <i class="fas fa-plus" id="new-file-btn"></i>
+        </div>
+        <div class="file-list" id="file-list">
+            <!-- Files will be dynamically added here -->
+        </div>
+    </nav>
+    
+    <main class="main-content">
+        <header class="header">
+            <h2 id="page-title">Select a Folder</h2>
+            <button class="add-box-btn" id="add-box-btn"><i class="fas fa-plus"></i></button>
+        </header>
+        
+        <div class="content-area" id="content-area">
+        </div>
+    </main>
+
+    <script>
+        const api = {
+            baseUrl: 'https://notesallmjh.onrender.com/api',
+
+            async getFolders() {
+                const response = await fetch(`${this.baseUrl}/folders`);
+                return await response.json();
+            },
+
+            async addFolder(name) {
+                const response = await fetch(`${this.baseUrl}/folders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                return await response.json();
+            },
+
+            async updateFolder(id, name) {
+                const response = await fetch(`${this.baseUrl}/folders/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                return await response.json();
+            },
+
+            async deleteFolder(id) {
+                const response = await fetch(`${this.baseUrl}/folders/${id}`, {
+                    method: 'DELETE'
+                });
+                return await response.json();
+            },
+
+            async getFilesByFolder(folderId) {
+                const response = await fetch(`${this.baseUrl}/files/${folderId}`);
+                return await response.json();
+            },
+
+            async addFile(name, folderId) {
+                const response = await fetch(`${this.baseUrl}/files`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, folderId })
+                });
+                return await response.json();
+            },
+
+            async updateFile(id, name, content) {
+                const response = await fetch(`${this.baseUrl}/files/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, content })
+                });
+                return await response.json();
+            },
+
+            async deleteFile(id) {
+                const response = await fetch(`${this.baseUrl}/files/${id}`, {
+                    method: 'DELETE'
+                });
+                return await response.json();
+            },
+
+            async getNotes(fileId) {
+                const response = await fetch(`${this.baseUrl}/notes/${fileId}`);
+                return await response.json();
+            },
+
+            async addNote(fileId, title = 'Note', content = '') {
+                const response = await fetch(`${this.baseUrl}/notes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fileId, title, content })
+                });
+                return await response.json();
+            },
+
+            async updateNote(id, title, content) {
+                const response = await fetch(`${this.baseUrl}/notes/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content })
+                });
+                return await response.json();
+            },
+
+            async deleteNote(id) {
+                const response = await fetch(`${this.baseUrl}/notes/${id}`, {
+                    method: 'DELETE'
+                });
+                return await response.json();
+            }
+        };
+
+        const appState = {
+            currentFolder: null,
+            currentFile: null,
+            currentNote: null
+        };
+
+        const elements = {
+            folderList: document.getElementById('folder-list'),
+            fileList: document.getElementById('file-list'),
+            contentArea: document.getElementById('content-area'),
+            pageTitle: document.getElementById('page-title'),
+            newFileBtn: document.getElementById('new-file-btn'),
+            newFolderBtn: document.getElementById('new-folder-btn'),
+            addBoxBtn: document.getElementById('add-box-btn')
+        };
+
+        async function initApp() {
+            try {
+                await initializeDefaultData();
+                await renderFolders();
+                setupEventListeners();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                alert('Failed to initialize the application.');
+            }
+        }
+
+        async function initializeDefaultData() {
+            const folders = await api.getFolders();
+            if (folders.length === 0) {
+                const defaultFolders = ['My Notes', 'Work', 'Personal', 'Education'];
+                for (const name of defaultFolders) {
+                    const folder = await api.addFolder(name);
+                    if (name === 'My Notes') {
+                        await api.addFile('Project Ideas', folder._id);
+                    } else if (name === 'Work') {
+                        await api.addFile('Meeting Notes', folder._id);
+                    } else if (name === 'Personal') {
+                        await api.addFile('Shopping List', folder._id);
+                    } else if (name === 'Education') {
+                        await api.addFile('Learning Resources', folder._id);
+                    }
+                }
+            }
+        }
+
+        function setupEventListeners() {
+            elements.newFolderBtn.addEventListener('click', createNewFolderDirect);
+            elements.newFileBtn.addEventListener('click', createNewFileDirect);
+            elements.addBoxBtn.addEventListener('click', () => {
+                if (appState.currentFolder && appState.currentFile) {
+                    createNewNote();
+                } else {
+                    alert('Please select a folder and a file first.');
+                }
+            });
+        }
+
+        async function renderFolders() {
+            try {
+                const folders = await api.getFolders();
+                elements.folderList.innerHTML = '';
+                folders.forEach(folder => {
+                    const folderElement = document.createElement('div');
+                    folderElement.className = 'folder';
+                    folderElement.setAttribute('data-id', folder._id);
+                    folderElement.innerHTML = `
+                        <span class="folder-name" data-id="${folder._id}">${folder.name}</span>
+                        <div class="folder-actions">
+                            <button class="folder-action-btn delete-folder" data-id="${folder._id}" title="Delete folder">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    folderElement.addEventListener('click', async function(e) {
+                        if (!e.target.closest('.folder-actions')) {
+                            await setActiveFolder(folder._id);
+                            await renderFiles(folder._id);
+                            await renderFolderContents(folder._id);
+                        }
+                    });
+                    folderElement.querySelector('.folder-name').addEventListener('dblclick', function() {
+                        const span = this;
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = span.textContent;
+                        input.className = 'folder-input';
+                        input.style.width = '150px';
+                        input.addEventListener('keypress', async function(e) {
+                            if (e.key === 'Enter' && input.value.trim()) {
+                                await api.updateFolder(folder._id, input.value.trim());
+                                span.textContent = input.value.trim();
+                                input.replaceWith(span);
+                                await renderFolders();
+                            }
+                        });
+                        input.addEventListener('blur', function() {
+                            input.replaceWith(span);
+                        });
+                        span.replaceWith(input);
+                        input.focus();
+                    });
+                    const deleteBtn = folderElement.querySelector('.delete-folder');
+                    deleteBtn.addEventListener('click', async function(e) {
+                        e.stopPropagation();
+                        await deleteFolder(folder._id);
+                    });
+                    elements.folderList.appendChild(folderElement);
+                });
+            } catch (error) {
+                console.error('Error rendering folders:', error);
+                alert('Failed to load folders.');
+            }
+        }
+
+        async function renderFiles(folderId) {
+            try {
+                const files = await api.getFilesByFolder(folderId);
+                elements.fileList.innerHTML = '';
+                files.forEach(file => {
+                    const fileElement = document.createElement('div');
+                    fileElement.className = 'file-item';
+                    fileElement.setAttribute('data-id', file._id);
+                    fileElement.innerHTML = `
+                        <span class="file-name" data-id="${file._id}">${file.name}</span>
+                        <button class="file-delete-btn" data-id="${file._id}"><i class="fas fa-trash"></i></button>
+                    `;
+                    fileElement.addEventListener('click', async function(e) {
+                        if (e.detail === 1) {
+                            await setActiveFile(file._id);
+                        } else if (e.detail === 2) {
+                            await modifyFile(file._id);
+                        }
+                    });
+                    fileElement.querySelector('.file-name').addEventListener('dblclick', function() {
+                        const span = this;
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = span.textContent;
+                        input.className = 'file-input';
+                        input.style.width = '150px';
+                        input.addEventListener('keypress', async function(e) {
+                            if (e.key === 'Enter' && input.value.trim()) {
+                                await api.updateFile(file._id, input.value.trim(), file.content);
+                                span.textContent = input.value.trim();
+                                input.replaceWith(span);
+                                await renderFiles(appState.currentFolder);
+                            }
+                        });
+                        input.addEventListener('blur', function() {
+                            input.replaceWith(span);
+                        });
+                        span.replaceWith(input);
+                        input.focus();
+                    });
+                    fileElement.querySelector('.file-delete-btn').addEventListener('click', async function(e) {
+                        e.stopPropagation();
+                        await deleteFile(file._id);
+                    });
+                    elements.fileList.appendChild(fileElement);
+                });
+            } catch (error) {
+                console.error('Error rendering files:', error);
+                alert('Failed to load files.');
+            }
+        }
+
+        async function renderFolderContents(folderId) {
+            try {
+                const folder = (await api.getFolders()).find(f => f._id === folderId);
+                if (!folder) return;
+                elements.pageTitle.textContent = folder.name;
+                appState.currentFolder = folderId;
+                elements.contentArea.innerHTML = '';
+            } catch (error) {
+                console.error('Error rendering folder contents:', error);
+                alert('Failed to load folder contents.');
+            }
+        }
+
+        async function setActiveFolder(folderId) {
+            const folders = elements.folderList.querySelectorAll('.folder');
+            folders.forEach(folder => {
+                folder.classList.remove('active');
+            });
+            const activeFolder = elements.folderList.querySelector(`.folder[data-id="${folderId}"]`);
+            if (activeFolder) {
+                activeFolder.classList.add('active');
+            }
+            appState.currentFolder = folderId;
+            appState.currentFile = null;
+            appState.currentNote = null;
+        }
+
+        async function setActiveFile(fileId) {
+            try {
+                const files = elements.fileList.querySelectorAll('.file-item');
+                files.forEach(file => {
+                    file.classList.remove('active');
+                });
+                const activeFile = elements.fileList.querySelector(`.file-item[data-id="${fileId}"]`);
+                if (activeFile) {
+                    activeFile.classList.add('active');
+                    appState.currentFile = fileId;
+                    await loadFileNotes(fileId);
+                }
+            } catch (error) {
+                console.error('Error setting active file:', error);
+                alert('Failed to load file.');
+            }
+        }
+
+        async function modifyFile(fileId) {
+            try {
+                const file = (await api.getFilesByFolder(appState.currentFolder)).find(f => f._id === fileId);
+                if (file) {
+                    const newName = prompt('Modify file name:', file.name);
+                    if (newName !== null && newName.trim() !== '') {
+                        await api.updateFile(fileId, newName.trim(), file.content);
+                        await renderFiles(appState.currentFolder);
+                        await renderFolderContents(appState.currentFolder);
+                    }
+                }
+            } catch (error) {
+                console.error('Error modifying file:', error);
+                alert('Failed to modify file.');
+            }
+        }
+
+        async function loadFileNotes(fileId) {
+            try {
+                const notes = await api.getNotes(fileId);
+                elements.contentArea.innerHTML = '';
+                const file = (await api.getFilesByFolder(appState.currentFolder)).find(f => f._id === fileId);
+                if (!file) return;
+
+                notes.forEach(note => {
+                    const hasDot = file.name.includes('.');
+                    const boxHeight = hasDot ? '200px' : 'auto';
+                    const box = document.createElement('div');
+                    box.className = 'box';
+                    box.setAttribute('data-id', note._id);
+                    box.innerHTML = `
+                        <div class="box-header">
+                            <button class="box-action-btn" data-action="copy" data-id="${note._id}"><i class="fas fa-copy"></i></button>
+                            <button class="box-delete-btn" data-action="delete" data-id="${note._id}"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <textarea class="box-content" data-id="${note._id}" placeholder="Paste or type content here..." ${hasDot ? 'style="height: 200px; overflow-y: auto;"' : ''}>${note.content}</textarea>
+                    `;
+                    elements.contentArea.appendChild(box);
+
+                    const contentArea = box.querySelector('.box-content');
+                    if (!hasDot) {
+                        contentArea.addEventListener('input', async function() {
+                            await api.updateNote(note._id, note.title, this.value);
+                            this.style.height = 'auto';
+                            this.style.height = this.scrollHeight + 'px';
+                        });
+                        contentArea.style.height = contentArea.scrollHeight + 'px';
+                    } else {
+                        contentArea.addEventListener('input', async function() {
+                            await api.updateNote(note._id, note.title, this.value);
+                        });
+                    }
+
+                    box.querySelectorAll('.box-action-btn, .box-delete-btn').forEach(btn => {
+                        btn.addEventListener('click', async function() {
+                            const action = this.getAttribute('data-action');
+                            const noteId = this.getAttribute('data-id');
+                            const targetBox = document.querySelector(`.box[data-id="${noteId}"]`);
+                            const content = targetBox.querySelector('.box-content').value;
+
+                            if (action === 'copy') {
+                                navigator.clipboard.writeText(content).then(() => alert('Content copied to clipboard!'));
+                            } else if (action === 'delete') {
+                                if (confirm('Are you sure you want to delete this note?')) {
+                                    await api.deleteNote(noteId);
+                                    targetBox.remove();
+                                    if (appState.currentNote === noteId) {
+                                        appState.currentNote = null;
+                                    }
+                                }
+                            }
+                        });
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading file notes:', error);
+                alert('Failed to load notes.');
+            }
+        }
+
+        async function createNewFolderDirect() {
+            const folderList = document.getElementById('folder-list');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'folder-input';
+            input.placeholder = 'Enter folder name';
+            input.style.width = '150px';
+            input.addEventListener('keypress', async function(e) {
+                if (e.key === 'Enter' && input.value.trim()) {
+                    await api.addFolder(input.value.trim());
+                    await renderFolders();
+                    input.remove();
+                }
+            });
+            folderList.appendChild(input);
+            input.focus();
+        }
+
+        async function createNewFileDirect() {
+            if (!appState.currentFolder) {
+                alert('Please select a folder first');
+                return;
+            }
+            const fileList = document.getElementById('file-list');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'file-input';
+            input.placeholder = 'Enter file name';
+            input.style.width = '150px';
+            input.addEventListener('keypress', async function(e) {
+                if (e.key === 'Enter' && input.value.trim()) {
+                    await api.addFile(input.value.trim(), appState.currentFolder);
+                    await renderFiles(appState.currentFolder);
+                    await renderFolderContents(appState.currentFolder);
+                    input.remove();
+                }
+            });
+            fileList.appendChild(input);
+            input.focus();
+        }
+
+        async function deleteFolder(folderId) {
+            try {
+                const folder = (await api.getFolders()).find(f => f._id === folderId);
+                if (!folder) return;
+                if (confirm(`Are you sure you want to delete the folder "${folder.name}" and all its contents?`)) {
+                    await api.deleteFolder(folderId);
+                    await renderFolders();
+                    if (appState.currentFolder === folderId) {
+                        appState.currentFolder = null;
+                        appState.currentFile = null;
+                        appState.currentNote = null;
+                        elements.pageTitle.textContent = 'Select a Folder';
+                        elements.fileList.innerHTML = '';
+                        elements.contentArea.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-folder-open"></i>
+                                <h3>No Folder Selected</h3>
+                                <p>Select a folder from the sidebar to view its contents</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting folder:', error);
+                alert('Failed to delete folder.');
+            }
+        }
+
+        async function deleteFile(fileId) {
+            try {
+                if (confirm('Are you sure you want to delete this file?')) {
+                    await api.deleteFile(fileId);
+                    await renderFiles(appState.currentFolder);
+                    await renderFolderContents(appState.currentFolder);
+                    if (appState.currentFile === fileId) {
+                        appState.currentFile = null;
+                        appState.currentNote = null;
+                        elements.contentArea.innerHTML = '';
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting file:', error);
+                alert('Failed to delete file.');
+            }
+        }
+
+        async function createNewNote() {
+            if (!appState.currentFolder || !appState.currentFile) {
+                alert('Please select a folder and a file first.');
+                return;
+            }
+            try {
+                const file = (await api.getFilesByFolder(appState.currentFolder)).find(f => f._id === appState.currentFile);
+                if (!file) return;
+                const note = await api.addNote(appState.currentFile, 'Note', '');
+                const hasDot = file.name.includes('.');
+                const boxHeight = hasDot ? '200px' : 'auto';
+                const box = document.createElement('div');
+                box.className = 'box';
+                box.setAttribute('data-id', note._id);
+                box.innerHTML = `
+                    <div class="box-header">
+                        <button class="box-action-btn" data-action="copy" data-id="${note._id}"><i class="fas fa-copy"></i></button>
+                        <button class="box-delete-btn" data-action="delete" data-id="${note._id}"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <textarea class="box-content" data-id="${note._id}" placeholder="Paste or type content here..." ${hasDot ? 'style="height: 200px; overflow-y: auto;"' : ''}></textarea>
+                `;
+                elements.contentArea.appendChild(box);
+
+                const contentArea = box.querySelector('.box-content');
+                if (!hasDot) {
+                    contentArea.addEventListener('input', async function() {
+                        await api.updateNote(note._id, note.title, this.value);
+                        this.style.height = 'auto';
+                        this.style.height = this.scrollHeight + 'px';
+                    });
+                    contentArea.style.height = contentArea.scrollHeight + 'px';
+                } else {
+                    contentArea.addEventListener('input', async function() {
+                        await api.updateNote(note._id, note.title, this.value);
+                    });
+                }
+
+                box.querySelectorAll('.box-action-btn, .box-delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const action = this.getAttribute('data-action');
+                        const noteId = this.getAttribute('data-id');
+                        const targetBox = document.querySelector(`.box[data-id="${noteId}"]`);
+                        const content = targetBox.querySelector('.box-content').value;
+
+                        if (action === 'copy') {
+                            navigator.clipboard.writeText(content).then(() => alert('Content copied to clipboard!'));
+                        } else if (action === 'delete') {
+                            if (confirm('Are you sure you want to delete this note?')) {
+                                await api.deleteNote(noteId);
+                                targetBox.remove();
+                                if (appState.currentNote === noteId) {
+                                    appState.currentNote = null;
+                                }
+                            }
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error creating new note:', error);
+                alert('Failed to create note.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
